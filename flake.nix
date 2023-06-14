@@ -38,10 +38,20 @@
         devShells.default = pkgs.mkShell {
           name = "typst";
           buildInputs = [ packages.default ];
-          shellHook = ''
-            export TYPST_EXTRA_FONT_PATHS="${pkgs.source-han-serif}/share/fonts:${pkgs.inriafonts}/share/fonts"
-            echo -e "\e[32mTypst Version: $(typst --version)\e[0m"
-          '';
+          shellHook =
+            let
+              fonts = [
+                pkgs.source-han-serif
+                pkgs.inriafonts
+                pkgs.source-han-sans
+                pkgs.fira-code
+              ];
+              fontPaths = pkgs.lib.concatStringsSep ":" (map (f: f + "/share/fonts") fonts);
+            in
+            ''
+              export TYPST_EXTRA_FONT_PATHS="${fontPaths}"
+              echo -e "\e[32mTypst Version: $(typst --version)\e[0m"
+            '';
         };
       });
 }

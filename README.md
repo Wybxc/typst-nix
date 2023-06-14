@@ -15,8 +15,9 @@ Then enjoy it!
 - Fonts
   - [x] 思源宋体 (Source Han Serif)
   - [x] Inria Serif
-  - [ ] 思源黑体 (Source Han Sans)
-  - [ ] Fira Code
+  - [x] 思源黑体 (Source Han Sans)
+  - [x] Inria Sans
+  - [x] Fira Code
 - Templates
   - [ ] Slides
   - [ ] Homework
