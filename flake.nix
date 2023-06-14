@@ -35,23 +35,26 @@
           '';
         };
 
-        devShells.default = pkgs.mkShell {
+        lib.withFonts = { fonts }: pkgs.mkShell {
           name = "typst";
           buildInputs = [ packages.default ];
           shellHook =
             let
-              fonts = [
-                pkgs.source-han-serif
-                pkgs.inriafonts
-                pkgs.source-han-sans
-                pkgs.fira-code
-              ];
               fontPaths = pkgs.lib.concatStringsSep ":" (map (f: f + "/share/fonts") fonts);
             in
             ''
               export TYPST_EXTRA_FONT_PATHS="${fontPaths}"
               echo -e "\e[32mTypst Version: $(typst --version)\e[0m"
             '';
+        };
+
+        devShells.default = pkgs.lib.makeOverridable lib.withFonts {
+          fonts = [
+            pkgs.source-han-serif
+            pkgs.inriafonts
+            pkgs.source-han-sans
+            pkgs.fira-code
+          ];
         };
       });
 }
