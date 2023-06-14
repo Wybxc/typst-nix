@@ -74,7 +74,8 @@
       "inputs": {
         "flake-utils": "flake-utils",
         "nixpkgs": "nixpkgs",
-        "typst": "typst"
+        "typst": "typst",
+        "typst-slides": "typst-slides"
       }
     },
     "rust-analyzer-src": {
@@ -125,6 +126,22 @@
       "original": {
         "owner": "typst",
         "repo": "typst",
+        "type": "github"
+      }
+    },
+    "typst-slides": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1684508167,
+        "narHash": "sha256-870n7jpNH5w9KoCJaj0QWUWANR8mBpuGlNx6fc1Ixuw=",
+        "owner": "andreasKroepelin",
+        "repo": "typst-slides",
+        "rev": "8021edacb3b8023fdd8c47f20916761a19c5b779",
+        "type": "github"
+      },
+      "original": {
+        "owner": "andreasKroepelin",
+        "repo": "typst-slides",
         "type": "github"
       }
     }

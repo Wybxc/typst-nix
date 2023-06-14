@@ -4,26 +4,41 @@
   inputs = {
     typst.url = "github:typst/typst";
     flake-utils.url = "github:numtide/flake-utils";
+
+    typst-slides = {
+      url = "github:andreasKroepelin/typst-slides";
+      flake = false;
+    };
   };
 
-  outputs = { self, nixpkgs, typst, flake-utils }:
+  outputs = { self, nixpkgs, typst, flake-utils, typst-slides }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        typst' = typst.packages.${system}.default;
-      in
-      rec {
-        packages.default = pkgs.stdenvNoCC.mkDerivation {
+        typst-app = typst.packages.${system}.default;
+
+        typst-templates = pkgs.stdenvNoCC.mkDerivation {
+          pname = "typst-templates";
+          version = "0.1.0";
+          src = self;
+
+          installPhase = ''
+            mkdir -p $out/share/typst/templates
+            cp -r ${typst-slides} $out/share/typst/templates/slides
+          '';
+        };
+
+        typst-wrapper = pkgs.stdenvNoCC.mkDerivation {
           pname = "typst";
-          version = "${typst'.version}-rev";
-          buildInputs = [ typst' ];
+          version = "${typst-app.version}-rev";
+          buildInputs = [ typst-app typst-templates ];
           src = self;
 
           buildPhase = ''
             cat > typst <<EOF
             #!${pkgs.stdenvNoCC.shell}
             font_paths=\$(echo "\$TYPST_EXTRA_FONT_PATHS" | awk -F: '{ for(i=1; i<=NF; i++) printf "--font-path %s ", \$i }')
-            exec ${typst'}/bin/typst \$font_paths "\$@"
+            exec ${typst-app}/bin/typst \$font_paths --root "${typst-templates}/share/typst/templates" "\$@"
             EOF
 
             chmod +x typst
@@ -35,9 +50,9 @@
           '';
         };
 
-        lib.withFonts = { fonts }: pkgs.mkShell {
+        devShell = { fonts }: pkgs.mkShell {
           name = "typst";
-          buildInputs = [ packages.default ];
+          buildInputs = [ typst-wrapper ];
           shellHook =
             let
               fontPaths = pkgs.lib.concatStringsSep ":" (map (f: f + "/share/fonts") fonts);
@@ -47,8 +62,11 @@
               echo -e "\e[32mTypst Version: $(typst --version)\e[0m"
             '';
         };
+      in
+      {
+        packages.default = typst-wrapper;
 
-        devShells.default = pkgs.lib.makeOverridable lib.withFonts {
+        devShells.default = pkgs.lib.makeOverridable devShell {
           fonts = [
             pkgs.source-han-serif
             pkgs.inriafonts
