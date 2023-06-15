@@ -63,7 +63,7 @@
             '';
         };
       in
-      {
+      rec {
         packages.default = typst-wrapper;
 
         devShells.default = pkgs.lib.makeOverridable devShell {
@@ -74,5 +74,32 @@
             pkgs.fira-code
           ];
         };
+
+        checks.default = pkgs.stdenvNoCC.mkDerivation
+          {
+            pname = "typst-nix-check";
+            version = "0.1.0";
+            src = self;
+            buildInputs = [ typst-wrapper ];
+
+            buildPhase =
+              let
+                examples = [
+                  "slide.typ"
+                ];
+              in
+              devShells.default.shellHook + "\n" +
+              pkgs.lib.concatStringsSep "\n" (map
+                (example: ''
+                  echo -e "\e[32mChecking ${example}\e[0m"
+                  typst compile examples/${example}
+                '')
+                examples);
+
+            installPhase = ''
+              mkdir -p $out/share/typst/examples
+              cp -r examples/*.pdf $out/share/typst/examples
+            '';
+          };
       });
 }
