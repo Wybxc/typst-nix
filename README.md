@@ -10,6 +10,14 @@ nix develop github:Wybxc/typst-nix
 
 Then enjoy it!
 
+### Cachix binary cache (optional)
+
+During each GitHub Actions run, a pre-built binary cache is pushed to my Cachix cache. If you trust its reliability, feel free to utilize it to expedite the installation process.
+
+```sh
+cachix use wybxc
+```
+
 ## Features / Todos
 
 - Fonts
