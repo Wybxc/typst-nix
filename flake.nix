@@ -52,6 +52,29 @@
               (builtins.attrNames fonts));
         };
 
+        typst-wrapper = pkgs.stdenvNoCC.mkDerivation {
+          pname = "typst-wrapper";
+          version = "${typst-app.version}";
+          buildInputs = [ typst-app typst-templates typst-fonts ];
+          src = self;
+
+          buildPhase = ''
+            cat > typst <<EOF
+            #!${pkgs.stdenvNoCC.shell}
+            export TYPST_FONT_PATHS="${typst-fonts}/share/fonts"
+            export XDG_DATA_HOME="${typst-templates}/share"
+            exec ${typst-app}/bin/typst "\$@"
+            EOF
+
+            chmod +x typst
+          '';
+
+          installPhase = ''
+            mkdir -p $out/bin
+            cp ./typst $out/bin
+          '';
+        };
+
         typst-packages = builtins.fetchGit {
           url = "https://github.com/typst/packages.git";
           ref = "main";
@@ -66,10 +89,8 @@
         devShells.default = pkgs.mkShell {
           name = "typst";
           buildInputs = [ typst-templates typst-fonts ];
-          packages = [ typst-app ];
+          packages = [ typst-wrapper ];
           shellHook = ''
-            export TYPST_FONT_PATHS="${typst-fonts}/share/fonts"
-            export XDG_DATA_HOME="${typst-templates}/share"
             echo -e "\e[32mTypst Version: $(typst --version)\e[0m"
           '';
         };
@@ -86,21 +107,19 @@
               pname = "typst-nix-check";
               version = "0.1.0";
               src = self;
-              buildInputs = [ typst-templates typst-fonts typst-app ];
+              buildInputs = [ typst-templates typst-fonts typst-wrapper ];
 
-              buildPhase =
-
-                devShells.default.shellHook + "\n" + ''
-                  mkdir -p $out/.cache/typst
-                  cp -r ${typst-packages}/packages $out/.cache/typst
-                  export XDG_CACHE_HOME="$out/.cache"
-                '' +
-                pkgs.lib.concatStringsSep "\n" (map
-                  (example: ''
-                    echo -e "\e[32mChecking ${example}\e[0m"
-                    typst compile examples/${example}.typ
-                  '')
-                  examples);
+              buildPhase = ''
+                mkdir -p $out/.cache/typst
+                cp -r ${typst-packages}/packages $out/.cache/typst
+                export XDG_CACHE_HOME="$out/.cache"
+              '' +
+              pkgs.lib.concatStringsSep "\n" (map
+                (example: ''
+                  echo -e "\e[32mChecking ${example}\e[0m"
+                  typst compile examples/${example}.typ
+                '')
+                examples);
 
               installPhase = pkgs.lib.concatStringsSep "\n" (map
                 (example: ''
