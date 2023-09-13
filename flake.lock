@@ -74,8 +74,7 @@
       "inputs": {
         "flake-utils": "flake-utils",
         "nixpkgs": "nixpkgs",
-        "typst": "typst",
-        "typst-slides": "typst-slides"
+        "typst": "typst"
       }
     },
     "rust-analyzer-src": {
@@ -116,32 +115,17 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1686649205,
-        "narHash": "sha256-ggGzjdiB+GT7vbm8C+gTH3lxBuh2JT3ZaKJlE9l0Qxs=",
+        "lastModified": 1691421581,
+        "narHash": "sha256-yrtOmlFAKOqAmhCP7n0HQCOQpU3DWyms5foCdUb9QTg=",
         "owner": "typst",
         "repo": "typst",
-        "rev": "6c542ea1a4a0ee85069dad6974ff331851eff406",
+        "rev": "da8367e189b02918a8fe1a98fd3059fd11a82cd9",
         "type": "github"
       },
       "original": {
         "owner": "typst",
+        "ref": "v0.7.0",
         "repo": "typst",
-        "type": "github"
-      }
-    },
-    "typst-slides": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1684508167,
-        "narHash": "sha256-870n7jpNH5w9KoCJaj0QWUWANR8mBpuGlNx6fc1Ixuw=",
-        "owner": "andreasKroepelin",
-        "repo": "typst-slides",
-        "rev": "8021edacb3b8023fdd8c47f20916761a19c5b779",
-        "type": "github"
-      },
-      "original": {
-        "owner": "andreasKroepelin",
-        "repo": "typst-slides",
         "type": "github"
       }
     }

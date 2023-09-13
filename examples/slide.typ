@@ -1,18 +1,40 @@
-#import "/slides/slides.typ": *
-#show: slides.with(
-    authors: ("Author A", "Author B"), short-authors: "Short author",
-    title: "Title", short-title: "Short title", subtitle: "Subtitle",
-    date: "Date",
+#import "@preview/polylux:0.3.1": *
+#import themes.university: *
+
+#show: university-theme.with(
+  short-author: "Short author",
+  short-title: "Short title",
+  short-date: "Short date",
 )
 
-#slide(theme-variant: "title slide")
+#title-slide(
+  authors: ("Author A", "Author B"),
+  title: "Title",
+  subtitle: "Subtitle",
+  date: "Date",
+  institution-name: "University Name",
+)
 
-#new-section("section name")
-
-#slide(title: "Slide title")[
-  A slide
+#slide(title: [Slide title], new-section: [The section])[
+  #lorem(40)
 ]
 
-#slide(theme-variant: "wake up")[
-  Wake up!
+#focus-slide()[
+  *Another variant with an image in background...*
 ]
+
+#matrix-slide[
+  left
+][
+  middle
+][
+  right
+]
+
+#matrix-slide(columns: 1)[
+  top
+][
+  bottom
+]
+
+#matrix-slide(columns: (1fr, 2fr, 1fr), ..(lorem(8),) * 9)

@@ -2,16 +2,11 @@
   description = "Typst's humble yet comprehensive environment: an accommodating space for crafting papers and presentations, offering a range of fonts and templates.";
 
   inputs = {
-    typst.url = "github:typst/typst";
+    typst.url = "github:typst/typst/v0.7.0";
     flake-utils.url = "github:numtide/flake-utils";
-
-    typst-slides = {
-      url = "github:andreasKroepelin/typst-slides";
-      flake = false;
-    };
   };
 
-  outputs = { self, nixpkgs, typst, flake-utils, typst-slides }:
+  outputs = { self, nixpkgs, typst, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
@@ -19,87 +14,100 @@
 
         typst-templates = pkgs.stdenvNoCC.mkDerivation {
           pname = "typst-templates";
-          version = "0.1.0";
-          src = self;
+          version = "0.2.0";
+          src = ./templates;
+          buildInputs = [ pkgs.yq ];
 
-          installPhase = ''
-            mkdir -p $out/share/typst/templates
-            cp -r ${typst-slides} $out/share/typst/templates/slides
-          '';
-        };
-
-        typst-wrapper = pkgs.stdenvNoCC.mkDerivation {
-          pname = "typst";
-          version = "${typst-app.version}-rev";
-          buildInputs = [ typst-app typst-templates ];
-          src = self;
-
-          buildPhase = ''
-            cat > typst <<EOF
-            #!${pkgs.stdenvNoCC.shell}
-            font_paths=\$(echo "\$TYPST_EXTRA_FONT_PATHS" | awk -F: '{ for(i=1; i<=NF; i++) printf "--font-path %s ", \$i }')
-            exec ${typst-app}/bin/typst \$font_paths --root "${typst-templates}/share/typst/templates" "\$@"
-            EOF
-
-            chmod +x typst
-          '';
-
-          installPhase = ''
-            mkdir -p $out/bin
-            cp ./typst $out/bin
-          '';
-        };
-
-        devShell = { fonts }: pkgs.mkShell {
-          name = "typst";
-          buildInputs = [ typst-wrapper ];
-          shellHook =
+          installPhase =
             let
-              fontPaths = pkgs.lib.concatStringsSep ":" (map (f: f + "/share/fonts") fonts);
+              templates = [
+                "handout"
+              ];
             in
-            ''
-              export TYPST_EXTRA_FONT_PATHS="${fontPaths}"
-              echo -e "\e[32mTypst Version: $(typst --version)\e[0m"
-            '';
+            pkgs.lib.concatStringsSep "\n" (map
+              (template: ''
+                VERSION=$(cat $src/${template}/typst.toml | tomlq -r '.package.version')
+                mkdir -p $out/share/typst/packages/local/${template}
+                cp -r $src/${template} $out/share/typst/packages/local/${template}/$VERSION
+              '')
+              templates);
+        };
+
+        typst-fonts = pkgs.stdenvNoCC.mkDerivation {
+          pname = "typst-fonts";
+          version = "0.2.0";
+          src = self;
+
+          installPhase =
+            let
+              fonts = {
+                inherit (pkgs) source-han-serif inriafonts source-han-sans fira-code;
+              };
+            in
+            pkgs.lib.concatStringsSep "\n" (map
+              (name: ''
+                mkdir -p $out/share/fonts/${name}
+                cp -r ${fonts.${name}}/share/fonts/* $out/share/fonts/${name}
+              '')
+              (builtins.attrNames fonts));
+        };
+
+        typst-packages = builtins.fetchGit {
+          url = "https://github.com/typst/packages.git";
+          ref = "main";
+          rev = "d691ac949a07426f2ede2b3444a01e4ab547847a";
         };
       in
       rec {
-        packages.default = typst-wrapper;
-
-        devShells.default = pkgs.lib.makeOverridable devShell {
-          fonts = [
-            pkgs.source-han-serif
-            pkgs.inriafonts
-            pkgs.source-han-sans
-            pkgs.fira-code
-          ];
+        packages = {
+          inherit typst-templates typst-fonts;
         };
 
-        checks.default = pkgs.stdenvNoCC.mkDerivation
-          {
-            pname = "typst-nix-check";
-            version = "0.1.0";
-            src = self;
-            buildInputs = [ typst-wrapper ];
+        devShells.default = pkgs.mkShell {
+          name = "typst";
+          buildInputs = [ typst-templates typst-fonts ];
+          packages = [ typst-app ];
+          shellHook = ''
+            export TYPST_FONT_PATHS="${typst-fonts}/share/fonts"
+            export XDG_DATA_HOME="${typst-templates}/share"
+            echo -e "\e[32mTypst Version: $(typst --version)\e[0m"
+          '';
+        };
 
-            buildPhase =
-              let
-                examples = [
-                  "slide.typ"
-                ];
-              in
-              devShells.default.shellHook + "\n" +
-              pkgs.lib.concatStringsSep "\n" (map
+        checks.default =
+          let
+            examples = [
+              "slide"
+              "handout"
+            ];
+          in
+          pkgs.stdenvNoCC.mkDerivation
+            {
+              pname = "typst-nix-check";
+              version = "0.1.0";
+              src = self;
+              buildInputs = [ typst-templates typst-fonts typst-app ];
+
+              buildPhase =
+
+                devShells.default.shellHook + "\n" + ''
+                  mkdir -p $out/.cache/typst
+                  cp -r ${typst-packages}/packages $out/.cache/typst
+                  export XDG_CACHE_HOME="$out/.cache"
+                '' +
+                pkgs.lib.concatStringsSep "\n" (map
+                  (example: ''
+                    echo -e "\e[32mChecking ${example}\e[0m"
+                    typst compile examples/${example}.typ
+                  '')
+                  examples);
+
+              installPhase = pkgs.lib.concatStringsSep "\n" (map
                 (example: ''
-                  echo -e "\e[32mChecking ${example}\e[0m"
-                  typst compile examples/${example}
+                  mkdir -p $out/share/typst/examples
+                  cp examples/${example}.pdf $out/share/typst/examples/
                 '')
                 examples);
-
-            installPhase = ''
-              mkdir -p $out/share/typst/examples
-              cp -r examples/*.pdf $out/share/typst/examples
-            '';
-          };
+            };
       });
 }

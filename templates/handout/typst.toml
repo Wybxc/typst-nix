@@ -1,0 +1,8 @@
+[package]
+name = "handout"
+version = "0.2.0"
+entrypoint = "handout.typ"
+authors = ["Wybxc"]
+license = "Apache-2.0"
+description = "Presentation slides creation with Typst"
+repository = "https://github.com/Wybxc/typst-nix"
