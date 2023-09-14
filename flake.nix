@@ -43,7 +43,7 @@
           installPhase =
             let
               fonts = {
-                inherit (pkgs) source-han-serif inriafonts source-han-sans fira-code;
+                inherit (pkgs) source-han-serif inriafonts source-han-sans fira-code arphic-ukai;
               };
             in
             pkgs.lib.concatStringsSep "\n" (map
