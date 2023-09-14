@@ -1,5 +1,9 @@
 # Typst in Nix
 
+![typst](https://img.shields.io/badge/typst-0.7.0-orange)
+![typst-lsp](https://img.shields.io/badge/typst--lsp-0.9.5-orange)
+[![Test](https://github.com/Wybxc/typst-nix/actions/workflows/test.yml/badge.svg)](https://github.com/Wybxc/typst-nix/actions/workflows/test.yml)
+
 Typst's humble yet comprehensive environment: an accommodating space for crafting papers and presentations, offering a range of fonts and templates.
 
 ## Usage
