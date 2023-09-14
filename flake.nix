@@ -3,14 +3,16 @@
 
   inputs = {
     typst.url = "github:typst/typst/v0.7.0";
+    typst-lsp.url = "github:nvarner/typst-lsp/v0.9.5";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, typst, flake-utils }:
+  outputs = { self, nixpkgs, typst, typst-lsp, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
         typst-app = typst.packages.${system}.default;
+        typst-lsp-app = typst-lsp.packages.${system}.default;
 
         typst-templates = pkgs.stdenvNoCC.mkDerivation {
           pname = "typst-templates";
@@ -55,7 +57,7 @@
         typst-wrapper = pkgs.stdenvNoCC.mkDerivation {
           pname = "typst-wrapper";
           version = "${typst-app.version}";
-          buildInputs = [ typst-app typst-templates typst-fonts ];
+          buildInputs = [ typst-app typst-lsp-app typst-templates typst-fonts ];
           src = self;
 
           buildPhase = ''
@@ -66,12 +68,20 @@
             exec ${typst-app}/bin/typst "\$@"
             EOF
 
-            chmod +x typst
+            cat > typst-lsp <<EOF
+            #!${pkgs.stdenvNoCC.shell}
+            export TYPST_FONT_PATHS="${typst-fonts}/share/fonts"
+            export XDG_DATA_HOME="${typst-templates}/share"
+            exec ${typst-lsp-app}/bin/typst-lsp "\$@"
+            EOF
+
+            chmod +x typst typst-lsp
           '';
 
           installPhase = ''
             mkdir -p $out/bin
             cp ./typst $out/bin
+            cp ./typst-lsp $out/bin
           '';
         };
 
