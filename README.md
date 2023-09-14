@@ -51,13 +51,16 @@ The following issues used to exist in the previous version of this repository. T
 ### 0.1.0 -> 0.2.0
 
 * Replace `#import "/slides/slide.typ"` with `#import "@preview/polylux:0.3.1"`. There may be API changes from typst-slides to polylux, so please refer to the [polylux documentation](https://andreaskroepelin.github.io/polylux/book/polylux.html).
+* For typst-lsp VSCode extension, please modify the configuration file to use the wrapper script `typst-lsp`. Otherwise, the language server will not be able to discover the templates.
 
 ## Changelog
 
 ### 0.2.0
 
 * Update to typst 0.7.0
-* Templates: Slides([polylux](https://github.com/andreasKroepelin/polylux) from typst published packages), Handout * **Breaking change**: now templates are imported via typst's package system
+* Add wrapper script for typst-lsp
+* Templates: Slides([polylux](https://github.com/andreasKroepelin/polylux) from typst published packages), Handout
+* **Breaking change**: now templates are imported via typst's package system
 
 ### 0.1.0
 
