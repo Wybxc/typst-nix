@@ -19,13 +19,13 @@
     if it.level == 1 [
       #v(1em)
       #align(center)[
-        #counter(heading).display()
-        #text(it.body)
+        #strong(counter(heading).display())
+        #strong(it.body)
         #v(1em, weak: true)
       ]
     ] else [
       #set par(first-line-indent: 0em)
-      #emph(it.body)
+      #strong(it.body)
     ]
   }
 
